@@ -66,12 +66,15 @@ class Pool(object):
             break
         if self.timeouts >= 3 or r is None or r.text is None or "{" not in r.text:
             self.failures += 1
+            print("Failure of some kind updating API data for {}".format(self.name))
             return False
         data = json.loads(r.text)
         if data is None or data is False:
             self.failures += 1
+            print("Failure of some kind updating API data for {}".format(self.name))
             return False
         self.response = data
+            print("Successfully grabbed API data for {}".format(self.name))
         return True
 
     def update_algorithms(self, valid_algos):
@@ -85,6 +88,7 @@ class Pool(object):
                             estimate=self.response[key]['estimate_current'],
                             actual24h=self.response[key]['actual_last24h']
                         )
+            print("Processed algorithm data for {}".format(self.name))
 
     def get_algorithms(self):
         return self.algorithms
@@ -114,11 +118,13 @@ class Pool(object):
         with open(self.csvfile, 'a') as f:
             writer = csv.writer(f)
             writer.writerow(new_row)
+        print("Appended estimate data for {p} to {f}".format(p=self.name, f=self.csvfile))
 
     def append_row_to_csv_actual(self, new_row):
         with open(self.csvactual, 'a') as f:
             writer = csv.writer(f)
             writer.writerow(new_row)
+        print("Appended actual data for {p} to {f}".format(p=self.name, f=self.csvactual))
 
 
 
@@ -145,6 +151,7 @@ class MiningPoolHub(Pool):
                     self.algorithms[valid_algos[obj['algo']]]=dict(
                             estimate=obj['profit']
                         )
+            print("Processed algorithm data for {}".format(self.name))
 
 
 
@@ -172,6 +179,7 @@ class Nicehash(Pool):
                     self.algorithms[valid_algos[obj['name']]]=dict(
                             estimate=obj['paying']
                         )
+            print("Processed algorithm data for {}".format(self.name))
 
 
 

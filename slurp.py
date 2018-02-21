@@ -18,15 +18,15 @@ class Pool(object):
                     apiurl=None,
                     apiparams=dict(),
                     csvfile=None,
-                    divisors=dict()
+                    csvactual=None,
                 ):
         self.name = name
         self.apiurl = apiurl
         self.apiparams = apiparams
         self.csvfile = csvfile
+        self.csvactual = csvactual
         self.response = ""
         self.algorithms = {}
-        self.divisors = divisors
         self.timeouts = 0
         self.failures = 0
 
@@ -36,7 +36,6 @@ class Pool(object):
                 "\'apiurl\'=\'{}\', ".format(self.apiurl) + \
                 "\'apiparams\'=\'{}\', ".format(self.apiparams) + \
                 "\'algorithms\'=\'{}\', ".format(self.algorithms) + \
-                "\'divisors\'=\'{}\', ".format(self.divisors) + \
                 "\'timeouts\'=\'{}\', ".format(self.timeouts) + \
                 "\'failures\'=\'{}\'".format(self.failures) + \
                 ")"
@@ -82,7 +81,10 @@ class Pool(object):
         else:
             for key in self.response:
                 if key in valid_algos:
-                    self.algorithms[valid_algos[key]]=self.response[key]['estimate_current']
+                    self.algorithms[valid_algos[key]]=dict(
+                            estimate=self.response[key]['estimate_current'],
+                            actual24h=self.response[key]['actual_last24h']
+                        )
 
     def get_algorithms(self):
         return self.algorithms
@@ -90,25 +92,31 @@ class Pool(object):
     def get_name(self):
         return self.name
 
-    def get_algorithm_divisor(self, algorithm):
-        divisor = 0
-        if algorithm in self.divisors:
-            divisor = self.divisors[algorithm]
-        else:
-            divisor = self.divisors['default']
-        return divisor
-
     def get_csv_string(self, new_timestamp, algo_map):
         new_row = [new_timestamp]
         for i in range(len(algo_map)):
             if algo_map[i] in self.algorithms:
-                new_row.append(str(self.algorithms[algo_map[i]]))
+                new_row.append(str(self.algorithms[algo_map[i]]['estimate']))
+            else:
+                new_row.append('')
+        return new_row
+
+    def get_csv_string_actual(self, new_timestamp, algo_map):
+        new_row = [new_timestamp]
+        for i in range(len(algo_map)):
+            if algo_map[i] in self.algorithms:
+                new_row.append(str(self.algorithms[algo_map[i]]['actual24h']))
             else:
                 new_row.append('')
         return new_row
 
     def append_row_to_csv(self, new_row):
         with open(self.csvfile, 'a') as f:
+            writer = csv.writer(f)
+            writer.writerow(new_row)
+
+    def append_row_to_csv_actual(self, new_row):
+        with open(self.csvactual, 'a') as f:
             writer = csv.writer(f)
             writer.writerow(new_row)
 
@@ -120,8 +128,7 @@ class MiningPoolHub(Pool):
                     name=None,
                     apiurl=None,
                     apiparams=None,
-                    csvfile=None,
-                    divisors=None
+                    csvfile=None
                 ):
         Pool.__init__(self, name, apiurl, apiparams, csvfile, divisors)
 
@@ -134,7 +141,10 @@ class MiningPoolHub(Pool):
             for obj in self.response['return']:
                 obj['algo'] = obj['algo'].lower()
                 if obj['algo'] in valid_algos:
-                    self.algorithms[valid_algos[obj['algo']]] = obj['profit']
+#                    self.algorithms[valid_algos[obj['algo']]] = obj['profit']
+                    self.algorithms[valid_algos[obj['algo']]]=dict(
+                            estimate=obj['profit']
+                        )
 
 
 
@@ -144,10 +154,9 @@ class Nicehash(Pool):
                     name=None,
                     apiurl=None,
                     apiparams=None,
-                    csvfile=None,
-                    divisors=None
+                    csvfile=None
                 ):
-        Pool.__init__(self, name, apiurl, apiparams, csvfile, divisors)
+        Pool.__init__(self, name, apiurl, apiparams, csvfile)
 
     def update_algorithms(self, valid_algos):
         self.algorithms = {}
@@ -160,7 +169,9 @@ class Nicehash(Pool):
         else:
             for obj in self.response['result']['simplemultialgo']:
                 if obj['name'] in valid_algos:
-                    self.algorithms[valid_algos[obj['name']]]=obj['paying']
+                    self.algorithms[valid_algos[obj['name']]]=dict(
+                            estimate=obj['paying']
+                        )
 
 
 
@@ -251,13 +262,7 @@ def main():
             name='ahashpool',
             apiurl='https://www.ahashpool.com/api/status/',
             csvfile=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'ahashpool.csv'),
-            divisors=dict(
-                default=1000000.0,
-                equihash=1000.0,
-                blake2s=1000000000.0,
-                blakecoin=1000000000.0,
-                decred=1000000000.0
-            )
+            csvactual=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'ahashpool_actual.csv')
         )
     )
 
@@ -266,14 +271,7 @@ def main():
             name='blazepool',
             apiurl='http://api.blazepool.com/status',
             csvfile=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'blazepool.csv'),
-            divisors=dict(
-                default=1000000.0,
-                equihash=1000.0,
-                blake2s=1000000000.0,
-                blakecoin=1000000000.0,
-                keccak=1000000000.0,
-                decred=1000000000.0
-            )
+            csvactual=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'blazepool_actual.csv')
         )
     )
 
@@ -282,15 +280,7 @@ def main():
             name='zergpool',
             apiurl='http://api.zergpool.com:8080/api/status',
             csvfile=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'zergpool.csv'),
-            divisors=dict(
-                default=1000000.0,
-                equihash=1000.0,
-                blake2s=1000000000.0,
-                blakecoin=1000000000.0,
-                quark=1000000000.0,
-                keccak=1000000000.0,
-                decred=1000000000.0
-            )
+            csvactual=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'zergpool_actual.csv')
         )
     )
 
@@ -299,18 +289,7 @@ def main():
             name='zpool',
             apiurl='http://www.zpool.ca/api/status/',
             csvfile=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'zpool.csv'),
-            divisors=dict(
-                default=1000000.0,
-                equihash=1000.0,
-                blake2s=1000000000.0,
-                blakecoin=1000000000.0,
-                decred=1000000000.0,
-                x11=1000000000.0,
-                quark=1000000000.0,
-                qubit=1000000000.0,
-                scrypt=1000000000.0,
-                keccak=1000000000.0
-            )
+            csvactual=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'zpool_actual.csv')
         )
     )
 
@@ -322,8 +301,7 @@ def main():
                 page='api',
                 action='getautoswitchingandprofitsstatistics'
             ),
-            csvfile=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'miningpoolhub.csv'),
-            divisors=dict(default=1000000000.0)
+            csvfile=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'miningpoolhub.csv')
         )
     )
 
@@ -334,8 +312,7 @@ def main():
             apiparams=dict(
                 method='simplemultialgo.info'
             ),
-            csvfile=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'nicehash.csv'),
-            divisors=dict(default=1000000000.0)
+            csvfile=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'nicehash.csv')
         )
     )
 
@@ -347,6 +324,8 @@ def main():
         for pool in pools:
             pool.update_algorithms(valid_algos)
             pool.append_row_to_csv(pool.get_csv_string(new_timestamp, algo_map))
+            if pool.csvactual is not None:
+                pool.append_row_to_csv_actual(pool.get_csv_string_actual(new_timestamp, algo_map))
         time.sleep(60)
 
 

@@ -27,7 +27,7 @@ First, some explanation on the spreadsheets, then some inexpert data analysis...
 The spreadsheets both contain the following:
 
 * summary tab of all algorithm averages for all pools
-* hashrates tab -- you should enter hashrates for your hardware here
+* hashrates tab -- you should enter hashrates for your hardware here (the pre-filled data is from a single GeForce GTX 1070)
 * tabs for charts & calculation tables. The charts I have initially filtered to the top algorithms for each pool. The calculation tables use the hashrate data to determine profits from the pool-reported estimate/actual data. These calculations take into account pool fees where applicable, except Nicehash because that's more complicated.
 * raw data tabs. If you wanted to run the script yourself and add new data or replace the data, this is where you'd want to put raw data. (You'll also then have to resize the calculation tables so they pick up whatever different quantity of data you're working with.)
 

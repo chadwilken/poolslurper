@@ -74,7 +74,7 @@ class Pool(object):
             print("Failure of some kind updating API data for {}".format(self.name))
             return False
         self.response = data
-            print("Successfully grabbed API data for {}".format(self.name))
+        print("Successfully grabbed API data for {}".format(self.name))
         return True
 
     def update_algorithms(self, valid_algos):
@@ -136,7 +136,7 @@ class MiningPoolHub(Pool):
                     apiparams=None,
                     csvfile=None
                 ):
-        Pool.__init__(self, name, apiurl, apiparams, csvfile, divisors)
+        Pool.__init__(self, name, apiurl, apiparams, csvfile)
 
     def update_algorithms(self, valid_algos):
         self.algorithms = {}
@@ -334,7 +334,7 @@ def main():
             pool.append_row_to_csv(pool.get_csv_string(new_timestamp, algo_map))
             if pool.csvactual is not None:
                 pool.append_row_to_csv_actual(pool.get_csv_string_actual(new_timestamp, algo_map))
-        time.sleep(60)
+        time.sleep(300)
 
 
 

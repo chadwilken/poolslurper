@@ -286,7 +286,7 @@ def main():
     # zergpool
     pools.append(Pool(
             name='zergpool',
-            apiurl='http://api.zergpool.com:8080/api/status',
+            apiurl='http://api.zergpool.com/api/status',
             csvfile=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'zergpool.csv'),
             csvactual=os.path.join(os.path.split(os.path.abspath(__file__))[0], 'csvdata', 'zergpool_actual.csv')
         )

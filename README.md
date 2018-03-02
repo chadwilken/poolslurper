@@ -58,6 +58,6 @@ So it really does seem better to pick one or two reliable algorithms at a good p
 ## Tips
 This seems silly but if anyone wants, I'll take tips...
 
-BTC: 35Vz5g6RaBXZSwSUceeunsqtrc8r7viKZJ
-LTC: LZgsfMQhPCxwJV71TtmuHgQGtoEGG4xidw
-ETH: 0x8283f38a399b1bd48e9fe9aab49afdb8b3a86d3b
+* BTC: 35Vz5g6RaBXZSwSUceeunsqtrc8r7viKZJ
+* LTC: LZgsfMQhPCxwJV71TtmuHgQGtoEGG4xidw
+* ETH: 0x8283f38a399b1bd48e9fe9aab49afdb8b3a86d3b
